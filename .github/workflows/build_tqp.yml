@@ -1,4 +1,4 @@
-name: Build TQP Backend (Go 1.25 Plus)
+name: Build TQP Backend (Public Repo Only)
 
 on:
   workflow_dispatch:
@@ -18,44 +18,33 @@ jobs:
             goarch: arm64
           - goos: windows
             goarch: amd64
-          - goos: linux
-            goarch: mipsle
     runs-on: ubuntu-latest
     env:
       GOOS: ${{ matrix.goos }}
       GOARCH: ${{ matrix.goarch }}
       CGO_ENABLED: 0
-      # 开启 1.25 强依赖的实验特性
       GOEXPERIMENT: jsonv2
     steps:
-      - name: Checkout codebase
+      - name: Checkout V2bX-TQP
         uses: actions/checkout@v4
         with:
-          # 如果你没在仓库设置 ACCESS_TOKEN，这里会报错。
-          # 我先帮你把它改成可选的，防止任务直接挂掉。
-          token: ${{ secrets.ACCESS_TOKEN || github.token }}
+          # 公开库直接拉取子模块，不需要任何 Secret
           submodules: recursive
 
       - name: Set up Go 1.25
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25' # 强上 1.25 版本
-          check-latest: true
+          go-version: '1.25'
 
       - name: Build V2bX-TQP
         run: |
           mkdir -p build_assets
-          if [ "${{ matrix.goarch }}" = "mipsle" ]; then
-            export GOMIPS=softfloat
-          fi
-          
           BINARY_NAME="V2bX-TQP-${{ matrix.goos }}-${{ matrix.goarch }}"
           if [ "${{ matrix.goos }}" = "windows" ]; then
             BINARY_NAME="V2bX-TQP-${{ matrix.goos }}-${{ matrix.goarch }}.exe"
           fi
 
           export GOTOOLCHAIN=local
-          # 确保所有的 Tags 都带上
           go build -v -o build_assets/$BINARY_NAME -tags "sing xray hysteria2 with_quic with_grpc with_utls with_wireguard with_acme with_gvisor" -trimpath -ldflags "-s -w -buildid="
 
       - name: Upload Artifacts
