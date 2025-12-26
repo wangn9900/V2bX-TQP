@@ -412,6 +412,26 @@ func getInboundOptions(tag string, info *panel.NodeInfo, c *conf.Options) (optio
 				TLS: &tls,
 			},
 		}
+	case "tqp":
+		in.Type = "tqp"
+		tqpOptions := &option.TQPInboundOptions{
+			ListenOptions: listen,
+			TLS:           &tls,
+		}
+		// Set fallback if configured
+		if info.TQP.FallbackServer != "" && info.TQP.FallbackServerPort > 0 {
+			tqpOptions.Fallback = &option.ServerOptions{
+				Server:     info.TQP.FallbackServer,
+				ServerPort: uint16(info.TQP.FallbackServerPort),
+			}
+		} else {
+			// Default fallback to local nginx
+			tqpOptions.Fallback = &option.ServerOptions{
+				Server:     "127.0.0.1",
+				ServerPort: 8080,
+			}
+		}
+		in.Options = tqpOptions
 	}
 	return in, nil
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/sagernet/sing-box/protocol/hysteria"
 	"github.com/sagernet/sing-box/protocol/hysteria2"
 	"github.com/sagernet/sing-box/protocol/shadowsocks"
+	"github.com/sagernet/sing-box/protocol/tqp"
 	"github.com/sagernet/sing-box/protocol/trojan"
 	"github.com/sagernet/sing-box/protocol/tuic"
 	"github.com/sagernet/sing-box/protocol/vless"
@@ -114,6 +115,15 @@ func (b *Sing) AddUsers(p *core.AddUsersParams) (added int, err error) {
 			}
 		}
 		err = in.(*anytls.Inbound).AddUsers(us)
+	case "tqp":
+		us := make([]option.TQPUser, len(p.Users))
+		for i := range p.Users {
+			us[i] = option.TQPUser{
+				Name: p.Users[i].Uuid,
+				UUID: p.Users[i].Uuid,
+			}
+		}
+		err = in.(*tqp.Inbound).AddUsers(us)
 	}
 	if err != nil {
 		return 0, err
@@ -195,6 +205,8 @@ func (b *Sing) DelUsers(users []panel.UserInfo, tag string, info *panel.NodeInfo
 			del = i.(*hysteria2.Inbound)
 		case "anytls":
 			del = i.(*anytls.Inbound)
+		case "tqp":
+			del = i.(*tqp.Inbound)
 		}
 	} else {
 		return errors.New("the inbound not found")

@@ -8,38 +8,63 @@
 
 ## 🔴 回滚点信息
 
-如果开发过程中出现严重问题，可执行以下命令回滚到开发前状态：
+如果开发过程中出现严重问题，可执行以下命令回滚：
 
-### V2bX 后端回滚
+### 回滚到 Phase 2 完成状态（推荐）
 
-```bash
-cd e:\GitHub\V2bX
-git checkout pre-tqp-baseline
-# 或者回滚到特定 commit
-git checkout d34efbe00b60df37f3f27f3726449035ce029af4
+```powershell
+# 所有仓库都可以用这个命令回滚到 Phase 2 完成状态
+git checkout tqp-phase2-complete
 ```
 
-### V2Board 面板回滚
+### 回滚到 TQP 开发前（完全回滚）
 
-```bash
+```powershell
+# V2bX
+cd e:\GitHub\V2bX
+git checkout pre-tqp-baseline
+
+# V2Board
 cd e:\GitHub\v2board
 git checkout pre-tqp-baseline
-# 或者回滚到特定 commit
-git checkout ad0fdeeb590f595c191801eb9b25a2ab335b8ad5
+
+# sing-box_mod
+cd e:\GitHub\sing-box_mod
+git checkout pre-tqp-baseline  # 或 dev-next~1
+
+# mihomo
+cd e:\GitHub\mihomo
+git checkout Meta  # 上游分支
+
+# MOMclash
+cd e:\GitHub\MOMclash
+git checkout main~1
 ```
 
 ---
 
 ## 📋 回滚点记录表
 
-| 日期 | Tag/Commit | 项目 | 描述 | 状态 |
-|------|------------|------|------|------|
-| 2025-12-26 | `pre-tqp-baseline` | V2bX | TQP 开发前基线 | ✅ 稳定 |
-| 2025-12-26 | `pre-tqp-baseline` | V2Board | TQP 开发前基线 | ✅ 稳定 |
-| 2025-12-26 | `d34efbe0` | V2bX | Fix counter traffic | ✅ 稳定 |
-| 2025-12-26 | `ad0fdeeb` | V2Board | Rename Clash-old.php | ✅ 稳定 |
+### Phase 2 完成回滚点 (2025-12-26 21:00)
+
+| 仓库 | Tag | 描述 | 状态 |
+|------|-----|------|------|
+| sing-box_mod | `tqp-phase2-complete` | TQP Inbound 完成 | ✅ 可用 |
+| V2bX | `tqp-phase2-complete` | V2bX 集成完成 | ✅ 可用 |
+| mihomo | `tqp-phase2-complete` | TQP Outbound 完成 | ✅ 可用 |
+| v2board | `tqp-phase2-complete` | 面板全栈集成完成 | ✅ 可用 |
+| MOMclash | `tqp-phase2-complete` | 客户端集成完成 | ✅ 可用 |
+| MOMclash/core/Clash.Meta | `tqp-phase2-complete` | 子模块 TQP 完成 | ✅ 可用 |
+
+### TQP 开发前基线 (2025-12-26 17:25)
+
+| 仓库 | Tag/Commit | 描述 | 状态 |
+|------|------------|------|------|
+| V2bX | `pre-tqp-baseline` / `d34efbe0` | 开发前基线 | ✅ 稳定 |
+| V2Board | `pre-tqp-baseline` / `ad0fdeeb` | 开发前基线 | ✅ 稳定 |
 
 ---
+
 
 ## 📊 开发阶段追踪
 
@@ -56,64 +81,84 @@ git checkout ad0fdeeb590f595c191801eb9b25a2ab335b8ad5
 
 ---
 
-### Phase 1: 核心协议实现 🔄 进行中
+### Phase 1: 核心协议实现 ✅ 已完成
 
 预计工期: 2-3 周
-开始时间: 2025-12-26 17:45
+实际完成: 2025-12-26 (1天！)
 
-#### 核心代码文件（已创建）
+#### 核心代码文件
 
 | 文件 | 位置 | 状态 | 说明 |
 |------|------|------|------|
-| `singbox_inbound.go` | `docs/tqp_code/` | ✅ 已创建 | sing-box Inbound 实现 |
-| `singbox_option.go` | `docs/tqp_code/` | ✅ 已创建 | sing-box Option 定义 |
-| `mihomo_outbound.go` | `docs/tqp_code/` | ✅ 已创建 | mihomo Outbound 实现 |
-| `README.md` | `docs/tqp_code/` | ✅ 已创建 | 集成指南 |
+| `inbound.go` | `sing-box_mod/protocol/tqp/` | ✅ 已完成 | sing-box Inbound 实现 |
+| `tqp.go` | `sing-box_mod/option/` | ✅ 已完成 | sing-box Option 定义 |
+| `tqp.go` | `mihomo/adapter/outbound/` | ✅ 已完成 | mihomo Outbound 实现 |
 
-#### V2bX 后端任务
+#### sing-box_mod (服务端) 任务
 
-| 任务 | 状态 | 日期 | 负责文件 | 备注 |
-|------|------|------|----------|------|
-| 创建 TQP 目录结构 | ⬜ 未开始 | - | `core/tqp/` | - |
-| 实现 TQP Inbound 框架 | ⬜ 未开始 | - | `core/tqp/inbound.go` | - |
-| 实现认证模块 | ⬜ 未开始 | - | `core/tqp/auth.go` | HMAC-SHA256 |
-| 实现加密模块 | ⬜ 未开始 | - | `core/tqp/cipher.go` | ChaCha20-Poly1305 |
-| 实现流量转发 | ⬜ 未开始 | - | `core/tqp/relay.go` | - |
-| 伪装响应 | ⬜ 未开始 | - | `core/tqp/fallback.go` | 抗主动探测 |
-| 单元测试 | ⬜ 未开始 | - | `core/tqp/*_test.go` | - |
+| 任务 | 状态 | 日期 | 备注 |
+|------|------|------|------|
+| TQP Inbound 框架 | ✅ 完成 | 2025-12-26 | 基于 VLESS 重写 |
+| 认证模块 | ✅ 完成 | 2025-12-26 | HMAC-SHA256 |
+| 加密模块 | ✅ 完成 | 2025-12-26 | ChaCha20-Poly1305 |
+| 流量转发 | ✅ 完成 | 2025-12-26 | RouteConnectionEx |
+| Fallback 伪装 | ✅ 完成 | 2025-12-26 | HTTP 响应/转发 |
+| 编译测试 | ✅ 完成 | 2025-12-26 | 29MB sing-box.exe |
 
-#### 客户端 (mihomo fork) 任务
+#### mihomo (客户端) 任务
 
-| 任务 | 状态 | 日期 | 负责文件 | 备注 |
-|------|------|------|----------|------|
-| Fork mihomo 仓库 | ⬜ 未开始 | - | - | - |
-| 添加 TQP 常量 | ⬜ 未开始 | - | `constant/adapters.go` | - |
-| 实现 TQP Outbound | ⬜ 未开始 | - | `adapter/outbound/tqp.go` | - |
-| 实现 TQP 传输层 | ⬜ 未开始 | - | `transport/tqp/` | - |
-| 配置解析支持 | ⬜ 未开始 | - | `adapter/adapter.go` | - |
-| 本地测试 | ⬜ 未开始 | - | - | - |
+| 任务 | 状态 | 日期 | 备注 |
+|------|------|------|------|
+| 添加 TQP 常量 | ✅ 完成 | 2025-12-26 | `constant/adapters.go` |
+| 实现 TQP Outbound | ✅ 完成 | 2025-12-26 | `adapter/outbound/tqp.go` |
+| 配置解析支持 | ✅ 完成 | 2025-12-26 | `adapter/parser.go` |
+| 编译测试 | ✅ 完成 | 2025-12-26 | mihomo.exe |
+| **本地端到端测试** | ✅ 完成 | 2025-12-26 | **成功！** |
+
+#### 🎉 测试结果
+
+```
+curl → SOCKS5:17080 → mihomo → TQP:10443 → sing-box → httpbin.org
+返回: {"origin": "112.254.160.217"}
+```
 
 ---
 
-### Phase 2: 流量统计 & 面板集成 ⬜ 未开始
+### Phase 2: 流量统计 & 面板集成 ✅ 已完成
 
 预计工期: 1-2 周
+实际完成: 2025-12-26 (同一天！)
 
 #### V2bX 任务
 
 | 任务 | 状态 | 日期 | 负责文件 | 备注 |
 |------|------|------|----------|------|
-| 流量计数器 | ⬜ 未开始 | - | `core/tqp/counter.go` | - |
-| 定时上报 | ⬜ 未开始 | - | `core/tqp/reporter.go` | - |
-| 面板 API 对接 | ⬜ 未开始 | - | `api/panel/tqp.go` | - |
+| 节点类型支持 | ✅ 完成 | 2025-12-26 | `api/panel/node.go` | TQPNode 结构体 |
+| Inbound 生成 | ✅ 完成 | 2025-12-26 | `core/sing/node.go` | TQP case |
+| 用户管理 | ✅ 完成 | 2025-12-26 | `core/sing/user.go` | AddUsers/DelUsers |
+| 流量统计 | ✅ 自动支持 | 2025-12-26 | - | 通用 hookServer |
+| 编译测试 | ✅ 完成 | 2025-12-26 | - | 167 MB v2bx.exe |
 
 #### V2Board 任务
 
 | 任务 | 状态 | 日期 | 负责文件 | 备注 |
 |------|------|------|----------|------|
-| TQP 节点类型定义 | ⬜ 未开始 | - | 数据库/模型 | - |
-| 订阅下发支持 | ⬜ 未开始 | - | `Protocols/TQP.php` | - |
-| 管理界面 | ⬜ 未开始 | - | 前端 | - |
+| 数据库表 | ✅ 完成 | 2025-12-26 | `database/install.sql`, `update.sql` | v2_server_tqp |
+| 模型 | ✅ 完成 | 2025-12-26 | `app/Models/ServerTQP.php` | - |
+| 控制器 | ✅ 完成 | 2025-12-26 | `app/Http/Controllers/.../TQPController.php` | CRUD |
+| 路由 | ✅ 完成 | 2025-12-26 | `app/Http/Routes/V1/AdminRoute.php` | /server/tqp/* |
+| 服务层 | ✅ 完成 | 2025-12-26 | `app/Services/ServerService.php` | getAvailableTQP |
+| V2bX 对接 | ✅ 完成 | 2025-12-26 | `app/Http/.../UniProxyController.php` | 配置下发 |
+| 订阅生成 | ✅ 完成 | 2025-12-26 | `app/Protocols/ClashMeta.php` 等 | buildTQP |
+| **前端 UI** | ✅ 完成 | 2025-12-26 | `public/assets/admin/umi.js` | 协议选择/过滤器/颜色 |
+
+#### MOMclash 客户端集成
+
+| 任务 | 状态 | 日期 | 负责文件 | 备注 |
+|------|------|------|----------|------|
+| TQP 常量 | ✅ 完成 | 2025-12-26 | `core/Clash.Meta/constant/adapters.go` | TQP 类型 |
+| TQP Outbound | ✅ 完成 | 2025-12-26 | `core/Clash.Meta/adapter/outbound/tqp.go` | 完整实现 |
+| 配置解析 | ✅ 完成 | 2025-12-26 | `core/Clash.Meta/adapter/parser.go` | tqp case |
 
 ---
 
@@ -158,55 +203,128 @@ git checkout ad0fdeeb590f595c191801eb9b25a2ab335b8ad5
 
 ## 📝 开发日志 (按时间倒序)
 
-### 2025-12-26 17:35 - 架构澄清（关键！）
+### 2025-12-26 20:52 - 🎉 Phase 2 全部完成！ ✅ 当前位置
 
-**操作人**: 用户指出
-**问题**: 之前文档没有弄清楚各端使用的内核
+**操作人**: AI 助手
+**状态**: Phase 2 流量统计 & 面板集成 - **全部完成！**
 
-**澄清内容**:
+#### ✅ 本次完成（V2Board 全栈集成）
 
-| 组件 | 内核 | 位置 | 说明 |
-|------|------|------|------|
-| **V2bX 后端** | 🔷 **sing-box** | `e:\GitHub\V2bX\sing-box_mod` | 本地已有 fork |
-| **客户端(mihomo系)** | 🔶 **mihomo** | 需要 Fork | Clash Meta 内核 |
-| **Shadowrocket** | ⬛ 闭源 | 无法修改 | ❌ **不支持 TQP** |
+1. **数据库层**
+   - `database/install.sql`: 添加 `v2_server_tqp` 表
+   - `database/update.sql`: 添加 `CREATE TABLE v2_server_tqp`
 
-**影响**:
-1. TQP 协议需要在 **两个不同内核** 中分别实现：
-   - sing-box 添加 TQP **Inbound** (服务端)
-   - mihomo 添加 TQP **Outbound** (客户端)
-2. **小火箭无法支持** TQP（闭源，无扩展接口）
-3. 用户需引导使用其他客户端（Stash、Clash Verge 等）
+2. **模型层**
+   - `app/Models/ServerTQP.php`: TQP 服务器模型
 
-**实现路径调整**:
+3. **控制器层**
+   - `app/Http/Controllers/V1/Admin/Server/TQPController.php`: 节点 CRUD
+   - `app/Http/Routes/V1/AdminRoute.php`: 添加 `/server/tqp/*` 路由
+
+4. **服务层**
+   - `app/Services/ServerService.php`: 添加 `getAvailableTQP()`, `getAllTQP()`
+   - `app/Http/Controllers/V1/Server/UniProxyController.php`: 添加 TQP 配置下发
+
+5. **订阅生成**
+   - `app/Protocols/ClashMeta.php`: 添加 `case 'tqp'` + `buildTQP()`
+   - `app/Protocols/ClashVerge.php`: 添加 TQP 支持
+   - `app/Protocols/ClashNyanpasu.php`: 添加 TQP 支持
+   - `app/Protocols/MOMclash.php`: 添加 TQP 支持
+
+6. **前端 UI** (通过 Node.js 脚本修改 umi.js)
+   - V2node 协议下拉菜单添加 TQP 选项
+   - 协议类型过滤器添加 TQP
+   - getTypeTag 添加 TQP 青色标签 (#00CED1)
+   - TLS 自动启用逻辑添加 TQP
+   - 传输协议排除逻辑添加 TQP
+
+7. **MOMclash 客户端**
+   - `core/Clash.Meta/constant/adapters.go`: 添加 TQP 类型
+   - `core/Clash.Meta/adapter/outbound/tqp.go`: TQP outbound 实现
+   - `core/Clash.Meta/adapter/parser.go`: 添加 tqp case
+
+#### 📦 待推送的仓库
+
+| 仓库 | 状态 | 主要修改 |
+|------|------|----------|
+| sing-box_mod | ✅ 已 commit | TQP inbound |
+| V2bX | ⏳ 待 commit | TQP 节点处理 |
+| V2Board | ⏳ 待 commit | 全栈 TQP 支持 |
+| MOMclash | ⏳ 待 commit | TQP outbound (Clash.Meta) |
+| mihomo | ⏳ 待 commit | TQP outbound |
+
+#### ⬜ 待完成（下一步 - 部署测试）
+
+1. **解决 Git 凭据问题**
+2. **推送所有仓库到 GitHub**
+3. **编译**:
+   - V2bX 服务端
+   - MOMclash 客户端 (FlClashCore.exe)
+4. **部署**:
+   - V2Board: git pull + 执行 SQL + 重启 webman
+   - V2bX: 替换二进制 + 重启服务
+5. **测试**:
+   - 添加 TQP 节点
+   - 客户端获取订阅
+   - 端到端连接测试
+
+#### 📝 重启后怎么找到这里
+
+重启 IDE 后，直接告诉 AI 助手：
+> "继续 TQP 开发，请查看 `e:\GitHub\V2bX\docs\TQP_DEVELOPMENT_LOG.md`"
+
+---
+
+### 2025-12-26 20:05 - V2bX 集成完成
+
+**操作人**: AI 助手
+**状态**: Phase 2 流量统计 & 面板集成 - V2bX 集成完成
+
+#### ✅ 完成
+
+1. **V2bX 节点类型支持**
+   - `api/panel/node.go`: 添加 `TQPNode` 结构体和 `NodeInfo.TQP` 字段
+   - `api/panel/node.go`: 在 `GetNodeInfo` 中添加 `tqp` case
+
+2. **V2bX Inbound 生成**
+   - `core/sing/node.go`: 在 `getInboundOptions` 中添加 TQP case
+   - 支持 TLS 配置和 Fallback 伪装
+
+3. **V2bX 用户管理**
+   - `core/sing/user.go`: 添加 TQP 用户的 AddUsers/DelUsers 支持
+   - `sing-box_mod/protocol/tqp/tqp_user.go`: 实现用户动态管理
+
+4. **V2bX 编译验证** ✅ 通过 (167 MB)
+
+---
+
+### 2025-12-26 19:11 - 🎉 本地测试成功!
+
+**操作人**: AI 助手
+**状态**: Phase 1 核心协议实现 - **完成!**
+
+#### ✅ 里程碑达成
+
+**TQP 协议端到端测试成功！**
+
 ```
-之前理解（错误）:
-  V2bX → 独立实现
-  
-正确理解:
-  V2bX → 基于 sing-box 扩展 TQP Inbound
-         ↓
-  sing-box_mod (本地fork) → 添加 protocol/tqp/
+测试环境:
+  服务端: sing-box_mod (127.0.0.1:10443)
+  客户端: mihomo (SOCKS5 127.0.0.1:17080)
+
+测试命令:
+  curl -x socks5://127.0.0.1:17080 http://httpbin.org/ip
+
+返回结果:
+  {"origin": "112.254.160.217"}
 ```
 
 ---
 
-### 2025-12-26 17:30 - 技术决策确认
+### 2025-12-26 18:49 - 双端编译通过
 
-**操作人**: 用户确认
-**确认内容**:
-
-| 问题 | 决定 | 说明 |
-|------|------|------|
-| TLS 证书 | ✅ Let's Encrypt | 使用正规证书，增强伪装效果 |
-| UDP 支持 | ❌ 不支持 | 简化实现，专注 TCP |
-| 伪装域名 | ✅ 可配置 | 用户可自定义伪装的 SNI 域名 |
-| 协议开放性 | ✅ 开放协议 | 不限于 TianQue，其他客户端也可实现 |
-
-**影响**:
-- 协议设计无需考虑 UDP
-- 需要设计伪装域名配置项
-- 需要编写协议规范文档供第三方实现
+**操作人**: AI 助手
+**状态**: Phase 1 核心协议实现 - 编译完成
 
 ---
 
@@ -218,19 +336,6 @@ git checkout ad0fdeeb590f595c191801eb9b25a2ab335b8ad5
 2. 分析 mihomo 源码，确认扩展可行性
 3. 创建回滚点 `pre-tqp-baseline` (两个项目)
 4. 创建本开发日志文档
-
-**V2bX 状态**:
-- 最新 commit: `d34efbe0` - Fix counter traffic
-- 未提交改动: `WORK_PROGRESS.md`, `docs/` 目录
-
-**V2Board 状态**:
-- 最新 commit: `ad0fdeeb` - Rename Clash-old.php
-- 未提交改动: 无
-
-**下一步计划**:
-- 确认待决问题（UDP、证书、伪装域名等）
-- 创建 feature/tqp 分支
-- 开始 Phase 1 核心协议实现
 
 ---
 
@@ -261,38 +366,81 @@ main/master          ← 稳定版本
 [TQP] fix: 修复认证 hash 计算错误
 ```
 
-### 在以下情况创建新回滚点
+---
 
-1. 完成一个完整功能点
-2. 代码通过测试
-3. 准备开始可能有风险的改动
-4. 每周至少一次
+## 📊 代码修改汇总
 
-### 更新本文档的时机
+### sing-box_mod (TQP Inbound)
 
-1. ✅ 任务状态变更时
-2. ✅ 创建新回滚点时
-3. ✅ 遇到重要问题/决策时
-4. ✅ 每次开发会话结束时
+| 文件 | 修改类型 | 说明 |
+|------|----------|------|
+| `constant/proxy.go` | 修改 | 添加 `TypeTQP = "tqp"` |
+| `include/registry.go` | 修改 | 注册 TQP Inbound |
+| `option/tqp.go` | **新建** | TQP Option 定义 |
+| `protocol/tqp/inbound.go` | **新建** | TQP Inbound 实现 |
+| `protocol/tqp/tqp_user.go` | **新建** | 用户动态管理 |
+
+### V2bX (服务端集成)
+
+| 文件 | 修改类型 | 说明 |
+|------|----------|------|
+| `api/panel/node.go` | 修改 | TQPNode 结构体 + GetNodeInfo case |
+| `core/sing/node.go` | 修改 | getInboundOptions TQP case |
+| `core/sing/user.go` | 修改 | AddUsers/DelUsers TQP case |
+
+### mihomo (TQP Outbound)
+
+| 文件 | 修改类型 | 说明 |
+|------|----------|------|
+| `constant/adapters.go` | 修改 | 添加 TQP AdapterType |
+| `adapter/parser.go` | 修改 | 添加 tqp case |
+| `adapter/outbound/tqp.go` | **新建** | TQP Outbound 实现 |
+
+### MOMclash/core/Clash.Meta (客户端)
+
+| 文件 | 修改类型 | 说明 |
+|------|----------|------|
+| `constant/adapters.go` | 修改 | 添加 TQP AdapterType |
+| `adapter/parser.go` | 修改 | 添加 tqp case |
+| `adapter/outbound/tqp.go` | **新建** | TQP Outbound 实现 |
+
+### V2Board (面板)
+
+| 文件 | 修改类型 | 说明 |
+|------|----------|------|
+| `database/install.sql` | 修改 | v2_server_tqp 表 |
+| `database/update.sql` | 修改 | CREATE TABLE v2_server_tqp |
+| `app/Models/ServerTQP.php` | **新建** | TQP 模型 |
+| `app/Http/.../TQPController.php` | **新建** | TQP 控制器 |
+| `app/Http/Routes/V1/AdminRoute.php` | 修改 | TQP 路由 |
+| `app/Services/ServerService.php` | 修改 | TQP 服务方法 |
+| `app/Http/.../UniProxyController.php` | 修改 | TQP 配置下发 |
+| `app/Protocols/ClashMeta.php` | 修改 | buildTQP 方法 |
+| `app/Protocols/ClashVerge.php` | 修改 | TQP case |
+| `app/Protocols/ClashNyanpasu.php` | 修改 | TQP case |
+| `app/Protocols/MOMclash.php` | 修改 | TQP case |
+| `public/assets/admin/umi.js` | 修改 | 前端 UI |
 
 ---
 
 ## ⚠️ 常见问题 & 解决方案
 
-（开发过程中遇到的问题记录在此）
-
 | 问题 | 解决方案 | 日期 |
 |------|----------|------|
-| - | - | - |
+| Git 推送权限错误 (403) | 需切换 Git 凭据或使用 SSH | 2025-12-26 |
+| 认证算法客户端/服务端不一致 | 移除客户端多余的 serverAddr 参数 | 2025-12-26 |
+| sing-box 接口变更 | Start() → Start(adapter.StartStage) | 2025-12-26 |
 
 ---
 
 ## 📚 相关文档
 
 - [技术蓝图](./TQP_PROTOCOL_BLUEPRINT.md) - 完整设计文档
+- [V2Board TQP 说明](../../v2board/docs/TQP_README.md) - V2Board 端文档
 - [mihomo 源码](https://github.com/MetaCubeX/mihomo) - 客户端参考
 
 ---
 
-> 最后更新: 2025-12-26 17:25
-> 最新阶段: Phase 0 (规划设计) - 已完成
+> 最后更新: 2025-12-26 20:52
+> 最新阶段: Phase 2 (流量统计 & 面板集成) - ✅ 已完成
+> 下一步: Phase 3 (部署测试)

@@ -36,6 +36,7 @@ type NodeInfo struct {
 	AnyTls      *AnyTlsNode
 	Hysteria    *HysteriaNode
 	Hysteria2   *Hysteria2Node
+	TQP         *TQPNode
 	Common      *CommonNode
 }
 
@@ -137,6 +138,13 @@ type Hysteria2Node struct {
 	DownMbps                int    `json:"down_mbps"`
 	ObfsType                string `json:"obfs"`
 	ObfsPassword            string `json:"obfs-password"`
+}
+
+// TQPNode is TianQue Protocol node info
+type TQPNode struct {
+	CommonNode
+	FallbackServer     string `json:"fallback_server,omitempty"`
+	FallbackServerPort int    `json:"fallback_server_port,omitempty"`
 }
 
 type RawDNS struct {
@@ -261,6 +269,15 @@ func (c *Client) GetNodeInfo() (node *NodeInfo, err error) {
 		}
 		cm = &rsp.CommonNode
 		node.Hysteria2 = rsp
+		node.Security = Tls
+	case "tqp":
+		rsp := &TQPNode{}
+		err = json.Unmarshal(r.Body(), rsp)
+		if err != nil {
+			return nil, fmt.Errorf("decode tqp params error: %s", err)
+		}
+		cm = &rsp.CommonNode
+		node.TQP = rsp
 		node.Security = Tls
 	}
 
