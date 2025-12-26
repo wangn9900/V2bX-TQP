@@ -8,7 +8,9 @@ on:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
     strategy:
+      fail-fast: false # 必须放在 strategy 内部
       matrix:
         goos: [linux, freebsd, darwin]
         goarch: [amd64, arm64, 386, arm, riscv64, mips, mipsle, mips64, mips64le]
@@ -27,9 +29,7 @@ jobs:
           - goos: freebsd
             goarch: riscv64
           - goos: linux
-            goarch: 386 # 现代后端通常不需要 32 位 linux
-    runs-on: ubuntu-latest
-    fail-fast: false
+            goarch: 386
     env:
       GOOS: ${{ matrix.goos }}
       GOARCH: ${{ matrix.goarch }}
@@ -48,7 +48,6 @@ jobs:
       - name: Build TQP Backend
         run: |
           mkdir -p build_assets
-          # 针对 MIPS 特殊处理
           if [ "${{ matrix.goarch }}" = "mips" ] || [ "${{ matrix.goarch }}" = "mipsle" ]; then
             export GOMIPS=softfloat
           fi
@@ -59,7 +58,6 @@ jobs:
           fi
 
           export GOTOOLCHAIN=local
-          # 编译所有插件支持
           go build -v -o build_assets/$BINARY_NAME -tags "sing xray hysteria2 with_quic with_grpc with_utls with_wireguard with_acme with_gvisor" -trimpath -ldflags "-s -w -buildid="
 
       - name: Upload Artifacts
