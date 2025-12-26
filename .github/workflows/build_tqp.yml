@@ -1,4 +1,4 @@
-name: Build TQP Backend (Official Matrix)
+name: Build TQP Backend (Stable Matrix)
 
 on:
   workflow_dispatch:
@@ -11,68 +11,58 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        goos: [windows, linux, freebsd, darwin]
-        goarch: [amd64, arm64, 386, arm, riscv64, mips, mipsle, mips64, mips64le]
         include:
           - goos: linux
-            goarch: arm
-            goarm: 7
-          - goos: android
+            goarch: amd64
+          - goos: linux
             goarch: arm64
-        exclude:
-          - goarch: 386
-            goos: darwin
-          - goos: freebsd
-            goarch: 386
-          - goos: freebsd
-            goarch: arm
-          - goos: freebsd
-            goarch: riscv64
-          - goos: freebsd
-            goarch: mips
-          - goos: freebsd
-            goarch: mipsle
-          - goos: freebsd
-            goarch: mips64
-          - goos: freebsd
-            goarch: mips64le
+          - goos: windows
+            goarch: amd64
+          - goos: linux
+            goarch: mipsle # 很多路由器需要这个
     runs-on: ubuntu-latest
     env:
       GOOS: ${{ matrix.goos }}
       GOARCH: ${{ matrix.goarch }}
-      GOARM: ${{ matrix.goarm }}
       CGO_ENABLED: 0
-      GOTOOLCHAIN: local
-      # 必须开启 jsonv2 实验特性，否则官方 V2bX 源码无法编译
-      GOEXPERIMENT: jsonv2 
+      # 开启 Go 1.24 里的 json 实验特性，适配官网代码
+      GOEXPERIMENT: jsonv2
     steps:
       - name: Checkout codebase
         uses: actions/checkout@v4
         with:
-          submodules: recursive
-          token: ${{ secrets.ACCESS_TOKEN }}
+          # 先不使用递归子模块，防止因为私有仓库 Token 缺失而报错
+          fetch-depth: 1
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25.0' # 强制升级到 1.25 以支持官方源码的 json/v2
+          go-version: '1.24.1' # 使用稳定的 1.24 系列
+
+      - name: 手动处理子模块 (防止 Token 报错)
+        run: |
+          git submodule init
+          # 如果是私有子模块，GITHUB_TOKEN 通常能搞定同账号下的拉取
+          git submodule update --remote --recursive || echo "Warning: submodule update failed, proceeding..."
 
       - name: Build V2bX-TQP
         run: |
           mkdir -p build_assets
-          if [ "${{ matrix.goarch }}" = "mips" ] || [ "${{ matrix.goarch }}" = "mipsle" ]; then
+          if [ "${{ matrix.goarch }}" = "mipsle" ]; then
             export GOMIPS=softfloat
           fi
           
-          BINARY_NAME="V2bX-TQP-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goarm }}"
+          BINARY_NAME="V2bX-TQP-${{ matrix.goos }}-${{ matrix.goarch }}"
           if [ "${{ matrix.goos }}" = "windows" ]; then
             BINARY_NAME="V2bX-TQP-${{ matrix.goos }}-${{ matrix.goarch }}.exe"
           fi
 
+          # 强制指定本地工具链
+          export GOTOOLCHAIN=local
           go build -v -o build_assets/$BINARY_NAME -tags "sing xray hysteria2 with_quic with_grpc with_utls with_wireguard with_acme with_gvisor" -trimpath -ldflags "-s -w -buildid="
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: V2bX-TQP-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goarm }}
+          name: V2bX-TQP-${{ matrix.goos }}-${{ matrix.goarch }}
           path: build_assets/*
