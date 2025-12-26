@@ -1,4 +1,4 @@
-name: Build TQP Backend (All Architectures)
+name: Build TQP Backend (Official Matrix)
 
 on:
   workflow_dispatch:
@@ -8,34 +8,44 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
     strategy:
-      fail-fast: false # 必须放在 strategy 内部
+      fail-fast: false
       matrix:
-        goos: [linux, freebsd, darwin]
-        goarch: [amd64, arm64, 386, arm, riscv64, mips, mipsle, mips64, mips64le]
+        goos: [windows, freebsd, linux, darwin]
+        goarch: [amd64, 386]
         include:
-          - goos: windows
-            goarch: amd64
-          - goos: windows
-            goarch: 386
-        exclude:
           - goos: darwin
-            goarch: 386
-          - goos: freebsd
-            goarch: 386
-          - goos: freebsd
+            goarch: arm64
+          - goos: linux
             goarch: arm
-          - goos: freebsd
+            goarm: 7
+          - goos: linux
+            goarch: arm64
+          - goos: linux
             goarch: riscv64
           - goos: linux
-            goarch: 386
+            goarch: mips
+          - goos: linux
+            goarch: mipsle
+          - goos: linux
+            goarch: mips64
+          - goos: linux
+            goarch: mips64le
+          - goos: android
+            goarch: arm64
+          - goos: freebsd
+            goarch: arm64
+        exclude:
+          - goarch: 386
+            goos: darwin
+    runs-on: ubuntu-latest
     env:
       GOOS: ${{ matrix.goos }}
       GOARCH: ${{ matrix.goarch }}
+      GOARM: ${{ matrix.goarm }}
       CGO_ENABLED: 0
     steps:
-      - name: Checkout V2bX-TQP
+      - name: Checkout codebase
         uses: actions/checkout@v4
         with:
           submodules: recursive
@@ -45,9 +55,10 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Build TQP Backend
+      - name: Build V2bX-TQP
         run: |
           mkdir -p build_assets
+          # MIPS 软浮点支持
           if [ "${{ matrix.goarch }}" = "mips" ] || [ "${{ matrix.goarch }}" = "mipsle" ]; then
             export GOMIPS=softfloat
           fi
@@ -63,5 +74,5 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: V2bX-TQP-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: V2bX-TQP-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goarm }}
           path: build_assets/*
