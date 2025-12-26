@@ -1,0 +1,53 @@
+name: Build TQP Backend
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - tqp-main
+    paths:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/build_tqp.yml"
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        goos: [linux, windows]
+        goarch: [amd64, arm64]
+        exclude:
+          - goos: windows
+            goarch: arm64
+    runs-on: ubuntu-latest
+    env:
+      GOOS: ${{ matrix.goos }}
+      GOARCH: ${{ matrix.goarch }}
+      CGO_ENABLED: 0
+    steps:
+      - name: Checkout V2bX-TQP
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.0' # 匹配 go.mod
+
+      - name: Build TQP Backend
+        run: |
+          mkdir -p build_assets
+          BINARY_NAME="V2bX-TQP"
+          if [ "$GOOS" = "windows" ]; then
+            BINARY_NAME="V2bX-TQP.exe"
+          fi
+          # 使用 jsonv2 实验特性并开启所有必要 tags
+          GOEXPERIMENT=jsonv2 go build -v -o build_assets/$BINARY_NAME -tags "sing xray hysteria2 with_quic with_grpc with_utls with_wireguard with_acme with_gvisor" -trimpath -ldflags "-s -w -buildid="
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: V2bX-TQP-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: build_assets/*
