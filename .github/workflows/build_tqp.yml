@@ -1,26 +1,35 @@
-name: Build TQP Backend
+name: Build TQP Backend (All Architectures)
 
 on:
   workflow_dispatch:
   push:
     branches:
       - tqp-main
-    paths:
-      - "**/*.go"
-      - "go.mod"
-      - "go.sum"
-      - ".github/workflows/build_tqp.yml"
 
 jobs:
   build:
     strategy:
       matrix:
-        goos: [linux, windows]
-        goarch: [amd64, arm64]
-        exclude:
+        goos: [linux, freebsd, darwin]
+        goarch: [amd64, arm64, 386, arm, riscv64, mips, mipsle, mips64, mips64le]
+        include:
           - goos: windows
-            goarch: arm64
+            goarch: amd64
+          - goos: windows
+            goarch: 386
+        exclude:
+          - goos: darwin
+            goarch: 386
+          - goos: freebsd
+            goarch: 386
+          - goos: freebsd
+            goarch: arm
+          - goos: freebsd
+            goarch: riscv64
+          - goos: linux
+            goarch: 386 # 现代后端通常不需要 32 位 linux
     runs-on: ubuntu-latest
+    fail-fast: false
     env:
       GOOS: ${{ matrix.goos }}
       GOARCH: ${{ matrix.goarch }}
@@ -34,19 +43,24 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod # 自动读取 go.mod 中的 1.24.7/1.24.11
+          go-version-file: go.mod
 
       - name: Build TQP Backend
         run: |
           mkdir -p build_assets
-          BINARY_NAME="V2bX-TQP"
-          if [ "$GOOS" = "windows" ]; then
-            BINARY_NAME="V2bX-TQP.exe"
+          # 针对 MIPS 特殊处理
+          if [ "${{ matrix.goarch }}" = "mips" ] || [ "${{ matrix.goarch }}" = "mipsle" ]; then
+            export GOMIPS=softfloat
           fi
-          # 强制使用本地工具链，禁止自动下载切换
+          
+          BINARY_NAME="V2bX-TQP-${{ matrix.goos }}-${{ matrix.goarch }}"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            BINARY_NAME="V2bX-TQP-${{ matrix.goos }}-${{ matrix.goarch }}.exe"
+          fi
+
           export GOTOOLCHAIN=local
-          # 使用 jsonv2 实验特性并开启所有必要 tags
-          GOEXPERIMENT=jsonv2 go build -v -o build_assets/$BINARY_NAME -tags "sing xray hysteria2 with_quic with_grpc with_utls with_wireguard with_acme with_gvisor" -trimpath -ldflags "-s -w -buildid="
+          # 编译所有插件支持
+          go build -v -o build_assets/$BINARY_NAME -tags "sing xray hysteria2 with_quic with_grpc with_utls with_wireguard with_acme with_gvisor" -trimpath -ldflags "-s -w -buildid="
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
