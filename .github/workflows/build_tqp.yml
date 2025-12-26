@@ -88,3 +88,37 @@ jobs:
         with:
           name: V2bX-TQP-${{ matrix.goos }}-${{ matrix.goarch }}
           path: build_assets/*
+
+  # 新增：将编译好的产物发布到 Release 页面，方便服务器 wget
+  publish-release:
+    name: Create TQP Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./all-artifacts
+
+      - name: Prepare Release Files
+        run: |
+          mkdir -p release_files
+          find ./all-artifacts -type f -exec cp {} ./release_files/ \;
+          ls -R release_files/
+
+      - name: Update GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: tqp-latest
+          name: "TQP Protocol Backend (Latest Build)"
+          body: |
+            这是最新的 TQP 专用后端构建版。
+            构建时间: ${{ github.event.head_commit.timestamp }}
+            包含全架构二进制文件。
+          files: release_files/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
