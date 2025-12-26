@@ -1,4 +1,4 @@
-name: Build TQP Backend (Public Repo Only)
+name: Build TQP Backend (Official Matrix)
 
 on:
   workflow_dispatch:
@@ -11,40 +11,76 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        goos: [windows, freebsd, linux, darwin]
+        goarch: [amd64, 386]
         include:
+          - goos: darwin
+            goarch: arm64
           - goos: linux
-            goarch: amd64
+            goarch: arm
+            goarm: 7
           - goos: linux
             goarch: arm64
-          - goos: windows
-            goarch: amd64
+          - goos: linux
+            goarch: riscv64
+          - goos: linux
+            goarch: mips
+          - goos: linux
+            goarch: mipsle
+          - goos: linux
+            goarch: mips64
+          - goos: linux
+            goarch: mips64le
+          - goos: android
+            goarch: arm64
+          - goos: freebsd
+            goarch: arm64
+        exclude:
+          - goarch: 386
+            goos: darwin
+          - goos: freebsd
+            goarch: 386
+          - goos: freebsd
+            goarch: arm
+          - goos: freebsd
+            goarch: riscv64
     runs-on: ubuntu-latest
     env:
       GOOS: ${{ matrix.goos }}
       GOARCH: ${{ matrix.goarch }}
+      GOARM: ${{ matrix.goarm }}
       CGO_ENABLED: 0
       GOEXPERIMENT: jsonv2
     steps:
       - name: Checkout V2bX-TQP
         uses: actions/checkout@v4
-        with:
-          # 公开库直接拉取子模块，不需要任何 Secret
-          submodules: recursive
+
+      - name: Force Pull TQP Core (Crucial)
+        # 这一步极其重要：手动把影子内核拉到指定目录，解决 protocol/tqp 找不到的问题
+        run: |
+          rm -rf sing-box_mod
+          git clone --branch tqp-main https://github.com/wangn9900/sing-box-tqp.git sing-box_mod
 
       - name: Set up Go 1.25
         uses: actions/setup-go@v5
         with:
           go-version: '1.25'
+          check-latest: true
 
       - name: Build V2bX-TQP
         run: |
           mkdir -p build_assets
-          BINARY_NAME="V2bX-TQP-${{ matrix.goos }}-${{ matrix.goarch }}"
+          if [ "${{ matrix.goarch }}" = "mips" ] || [ "${{ matrix.goarch }}" = "mipsle" ]; then
+            export GOMIPS=softfloat
+          fi
+          
+          BINARY_NAME="V2bX-TQP-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goarm }}"
           if [ "${{ matrix.goos }}" = "windows" ]; then
             BINARY_NAME="V2bX-TQP-${{ matrix.goos }}-${{ matrix.goarch }}.exe"
           fi
 
           export GOTOOLCHAIN=local
+          # 执行编译，现在 sing-box_mod 目录已经真实存在，replace 规则将生效
           go build -v -o build_assets/$BINARY_NAME -tags "sing xray hysteria2 with_quic with_grpc with_utls with_wireguard with_acme with_gvisor" -trimpath -ldflags "-s -w -buildid="
 
       - name: Upload Artifacts
