@@ -1,0 +1,19 @@
+mixed-port: 17080
+mode: global
+log-level: debug
+
+proxies:
+  - name: "TQP-Test"
+    type: tqp
+    server: 127.0.0.1
+    port: 10443
+    uuid: "b831381d-6324-4d53-ad4f-8cda48b30811"
+
+proxy-groups:
+  - name: "GLOBAL"
+    type: select
+    proxies:
+      - TQP-Test
+
+rules:
+  - MATCH,GLOBAL

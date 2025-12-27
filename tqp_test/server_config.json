@@ -1,0 +1,26 @@
+{
+    "log": {
+        "level": "debug",
+        "timestamp": true
+    },
+    "inbounds": [
+        {
+            "type": "tqp",
+            "tag": "tqp-in",
+            "listen": "127.0.0.1",
+            "listen_port": 10443,
+            "users": [
+                {
+                    "name": "test-user",
+                    "uuid": "b831381d-6324-4d53-ad4f-8cda48b30811"
+                }
+            ]
+        }
+    ],
+    "outbounds": [
+        {
+            "type": "direct",
+            "tag": "direct"
+        }
+    ]
+}
